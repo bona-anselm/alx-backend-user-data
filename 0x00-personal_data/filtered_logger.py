@@ -23,9 +23,9 @@ class RedactingFormatter(logging.Formatter):
         """ Ffilter values in incoming log records using filter_datum """
         msg = super(RedactingFormatter, self).format(record)
         txt = filter_datum(self.fields,
-                            self.REDACTION,
-                            msg,
-                            self.SEPARATOR)
+                           self.REDACTION,
+                           msg,
+                           self.SEPARATOR)
         return txt
 
 
