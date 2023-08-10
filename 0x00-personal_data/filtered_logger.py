@@ -2,7 +2,9 @@
 """ Defines filter_datum function """
 from typing import List
 import re
+import os
 import logging
+import mysql.connector
 
 
 class RedactingFormatter(logging.Formatter):
@@ -19,12 +21,12 @@ class RedactingFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         """ Ffilter values in incoming log records using filter_datum """
-        message = super(RedactingFormatter, self).format(record)
-        texts = filter_datum(self.fields,
+        record_info = super(RedactingFormatter, self).format(record)
+        txts = filter_datum(self.fields,
                              self.REDACTION,
-                             message,
+                             record_info,
                              self.SEPARATOR)
-        return texts
+        return txts
 
 
 patterns = {
@@ -55,6 +57,22 @@ def get_logger() -> logging.Logger:
     logger.propagate = False
     logger.addHandler(stream_handler)
     return logger
+
+
+def get_db() -> mysql.connector.connection.MySQLConnection:
+    """ Connects to a database using os credentials via os.getenv """
+    db_host = os.getenv("PERSONAL_DATA_DB_HOST", "localhost")
+    db_name = os.getenv("PERSONAL_DATA_DB_NAME", "")
+    db_user = os.getenv("PERSONAL_DATA_DB_USERNAME", "root")
+    db_pwd = os.getenv("PERSONAL_DATA_DB_PASSWORD", "")
+    connection = mysql.connector.connect(
+        host=db_host,
+        port=3306,
+        user=db_user,
+        password=db_pwd,
+        database=db_name,
+    )
+    return connection
 
 
 if __name__ == "__main__":
