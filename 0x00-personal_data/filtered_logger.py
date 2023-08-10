@@ -23,9 +23,9 @@ class RedactingFormatter(logging.Formatter):
         """ Ffilter values in incoming log records using filter_datum """
         record_info = super(RedactingFormatter, self).format(record)
         txts = filter_datum(self.fields,
-                             self.REDACTION,
-                             record_info,
-                             self.SEPARATOR)
+                            self.REDACTION,
+                            record_info,
+                            self.SEPARATOR)
         return txts
 
 
@@ -64,7 +64,7 @@ def get_db() -> mysql.connector.connection.MySQLConnection:
     db_host = os.getenv("PERSONAL_DATA_DB_HOST", "localhost")
     db_name = os.getenv("PERSONAL_DATA_DB_NAME", "")
     db_user = os.getenv("PERSONAL_DATA_DB_USERNAME", "root")
-    db_pwd = os.getenv("PERSONAL_DATA_DB_PASSWORD", "")
+    db_pwd = os.getenv("PERSONAL_DATA_DB_PASSWORD", "Ej10f0r!")
     connection = mysql.connector.connect(
         host=db_host,
         port=3306,
