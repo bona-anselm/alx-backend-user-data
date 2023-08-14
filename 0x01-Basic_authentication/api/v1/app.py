@@ -21,6 +21,7 @@ if AUTH_TYPE == "auth":
 if AUTH_TYPE == 'basic_auth':
     auth = BasicAuth()
 
+
 @app.before_request
 def before_request():
     """ Handles requests filtering """
@@ -37,6 +38,7 @@ def before_request():
                 abort(401)
             if user is None:
                 abort(403)
+
 
 @app.errorhandler(404)
 def not_found(error) -> str:
