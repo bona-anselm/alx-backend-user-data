@@ -34,31 +34,44 @@ class DB:
 
     def add_user(self, email: str, hashed_password: str) -> User:
         """ Adds a new user to the database """
-        user = User(email=email, hashed_password=hashed_password)
-        self._session.add(user)
-        self._session.commit()
-        return user
+        try:
+            new_user = User(email=email, hashed_password=hashed_password)
+            self._session.add(new_user)
+            self._session.commit()
+        except Exception:
+            self._session.rollback()
+            new_user = None
+        return new_user
 
     def find_user_by(self, **kwargs) -> User:
         """ Retrieves a user based on a set of filters """
-        users = self._session.query(User)
+        fields, values = [], []
         for key, value in kwargs.items():
-            if key not in User.__dict__:
-                raise InvalidRequestError
-            for user in users:
-                if getattr(user, key) == value:
-                    return user
-                raise NoResultFound
+            if hasattr(User, key):
+                fields.append(getattr(User, key))
+                values.append(value)
+            else:
+                raise InvalidRequestError()
+        result = self._session.query(User).filter(
+            tuple_(*fields).in_([tuple(values)])
+        ).first()
+        if result is None:
+            raise NoResultFound()
+        return result
 
     def update_user(self, user_id: int, **kwargs) -> None:
         """ Finds and updates a user based on a given id """
-        try:
-            user = self.find_user_by(id=user_id)
-        except NoResultFound:
-            raise ValueError()
+        user = self.find_user_by(id=user_id)
+        if user is None:
+            return
+        update_source = {}
         for key, value in kwargs.items():
-            if hasattr(user, key):
-                setattr(user, key, value)
+            if hasattr(User, key):
+                update_source[getattr(User, key)] = value
             else:
-                raise ValueError
+                raise ValueError()
+        self._session.query(User).filter(User.id == user_id).update(
+            update_source,
+            synchronize_session=False,
+        )
         self._session.commit()
