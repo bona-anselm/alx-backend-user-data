@@ -45,19 +45,14 @@ class DB:
 
     def find_user_by(self, **kwargs) -> User:
         """ Retrieves a user based on a set of filters """
-        fields, values = [], []
+        users = self._session.query(User)
         for key, value in kwargs.items():
-            if hasattr(User, key):
-                fields.append(getattr(User, key))
-                values.append(value)
-            else:
-                raise InvalidRequestError()
-        result = self._session.query(User).filter(
-            tuple_(*fields).in_([tuple(values)])
-        ).first()
-        if result is None:
-            raise NoResultFound()
-        return result
+            if key not in User.__dict__:
+                raise InvalidRequestError
+            for user in users:
+                if getattr(user, key) == value:
+                    return user
+                raise NoResultFound
 
     def update_user(self, user_id: int, **kwargs) -> None:
         """ Finds and updates a user based on a given id """
